@@ -272,3 +272,21 @@ function add_to_cart($product_id){
 		$_SESSION['cart'] = array($product_id);
 		}
 }
+
+
+// Purchase history
+
+function get_purchase_history(){
+	global $wpdb;
+
+	$current_user_id = get_current_user_id();
+
+	$query = $wpdb->prepare(
+		"SELECT * FROM $wpdb->prefix . 'cricket_bat_purchase_history' WHERE 
+		user_id = %d
+		ORDER BY purchase_date DESC",
+		$current_user_id
+	);
+	
+	
+}
