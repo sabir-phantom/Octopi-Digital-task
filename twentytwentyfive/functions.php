@@ -256,3 +256,19 @@ function display_product_id_meta_box( $post ) {
 	</div>
 	<?php
 }
+
+// add to cart
+
+function add_to_cart($product_id){
+	if ( isset($_SESSION['cart']) ) {
+		if(in_array($product_id, $_SESSION['cart'])){
+			return;
+		} 
+		else {
+			$_SESSION['cart'][] = $product_id; 
+		}
+	}
+	else {
+		$_SESSION['cart'] = array($product_id);
+		}
+}
