@@ -278,24 +278,34 @@ foreach ($orders as $order) {
 // Product management
 
 function create_bat_post_type() {
-	$labels = array (
-		'name' => _x( 'Cricket Bats', 'Post Type General Name', 'Text' ),
-		'singular_name' => _x( 'Cricket Bat', 'Post Type Singular Name', 'Text' ),
-	);
-	$args = array(
-		'label' => __( 'Cricket Bats', 'Text' ),
-		'description' => __( 'Cricket Bats', 'Text' ),
-		'labels' => $labels,
-		'taxomonies' =>	array( 'category' ),
-		'public' => true,
-		'show_ui' => true,
-		'show_in_menu' => true,
-	);
-	register_post_type( 'cricket_bat', $args );
+    $labels = array(
+        'name'               => _x('Cricket Bats', 'Post Type General Name', 'text-domain'),
+        'singular_name'      => _x('Cricket Bat', 'Post Type Singular Name', 'text-domain'),
+        'menu_name'          => __('Cricket Bats', 'text-domain'),
+        'name_admin_bar'     => __('Cricket Bat', 'text-domain'),
+    );
 
+    $args = array(
+        'label'             => __('Cricket Bats', 'text-domain'),
+        'description'       => __('Cricket Bat Products', 'text-domain'),
+        'labels'            => $labels,
+        'public'            => true,
+        'show_ui'           => true,
+        'show_in_menu'      => true,
+        'query_var'         => true,
+        'rewrite'           => array('slug' => 'cricket-bats'),
+        'capability_type'   => 'post',
+        'has_archive'       => true,
+        'hierarchical'      => false,
+        'menu_position'     => null,
+        'supports'          => array('title', 'editor', 'thumbnail', 'excerpt', 'custom-fields'),
+        'taxonomies'        => array('category'),
+    );
+
+    register_post_type('cricket_bat', $args);
 }
 
-add_action( 'init', 'create_bat_post_type' );
+add_action('init', 'create_bat_post_type');
 
 
 function add_bat_id_meta_box() {
