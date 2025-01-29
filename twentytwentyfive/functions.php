@@ -164,7 +164,10 @@ endif;
 
 // Registration form 
 function user_registration_form(){
-	if(is_user_logged_in()) {
+	ob_start();
+	echo "Registration form function is called...";
+	if( is_user_logged_in() ) {
+		ob_end_flush();
 		return;
 	}
 	?>
@@ -190,7 +193,9 @@ function user_registration_form(){
 			echo 'Registration failed';
 			}
 	}
+	ob_end_flush();
 }
+add_shortcode( 'registration_form', 'user_registration_form');
 
 // Login form
 
@@ -208,7 +213,6 @@ function user_login_form(){
 	<?php
 }
 
-add_shortcode( 'registration_form', 'user_registration_form');
 add_shortcode( 'login_form', 'user_login_form');
 
 
@@ -287,6 +291,7 @@ function get_purchase_history(){
 		ORDER BY purchase_date DESC",
 		$current_user_id
 	);
+	$results = $wpdb->get_results($query);
 	
-	
+	return $results;
 }
