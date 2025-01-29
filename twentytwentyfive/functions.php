@@ -163,58 +163,116 @@ endif;
 // **Cricket Bat Shop (ecommerce)** //
 
 // Registration form 
-function user_registration_form(){
-	ob_start();
-	echo "Registration form function is called...";
-	if( is_user_logged_in() ) {
-		ob_end_flush();
-		return;
-	}
-	?>
+function cricket_shop_registration_form() {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_user'])) {
+        $username = sanitize_text_field($_POST['username']);
+        $email = sanitize_email($_POST['email']);
+        $password = sanitize_text_field($_POST['password']);
 
-	<form method="post" action="">
-		<input type="text" name="username" placeholder="Username" required>
+        $user_id = wp_create_user($username, $password, $email);
+
+        if (!is_wp_error($user_id)) {
+            echo '<p>Registration successful. Please <a href="/login">log in</a>.</p>';
+        } else {
+            echo '<p>Error: ' . $user_id->get_error_message() . '</p>';
+        }
+    }
+
+    ob_start();
+    ?>
+    <form method="post">
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="email" name="email" placeholder="Email" required>
         <input type="password" name="password" placeholder="Password" required>
-        <input type="submit" name="register" value="Register">
-	</form>
-	
-	<?php
-	if( isset( $_POST['register']) ) {
-		$username = sanitize_user( $_POST['username'] );
-        $password = sanitize_text_field( $_POST['password'] );
-
-		$user_id = wp_create_user( $username, $password);
-
-		if ( !is_wp_error($user_id) ) {
-			// wp_set_auth_cookie($user_id);
-			wp_redirect( home_url() );
-			exit;
-		} else {
-			echo 'Registration failed';
-			}
-	}
-	ob_end_flush();
+        <button type="submit" name="register_user">Register</button>
+    </form>
+    <?php
+    return ob_get_clean();
 }
-add_shortcode( 'registration_form', 'user_registration_form');
+add_shortcode('cricket_shop_registration', 'cricket_shop_registration_form');
 
 // Login form
 
-function user_login_form(){
-	if( is_user_logged_in() ) {
-		return;
-	}
-	?>
-	
-	<form method="post" action="">
-        <input type="text" name="log" placeholder="Username" required>
-        <input type="password" name="pwd" placeholder="Password" required>
-        <input type="submit" name="wp-submit" value="Login">
+function cricket_shop_login_form() {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_user'])) {
+        $credentials = array(
+            'user_login' => $_POST['username'],
+            'user_password' => $_POST['password'],
+            'remember' => true,
+        );
+
+        $user = wp_signon($credentials, false);
+
+        if (!is_wp_error($user)) {
+            wp_redirect(home_url()); // Redirect to the home page after successful login
+            exit;
+        } else {
+            echo '<p>Error: ' . $user->get_error_message() . '</p>';
+        }
+    }
+
+    ob_start();
+    ?>
+    <form method="post">
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button type="submit" name="login_user">Login</button>
     </form>
-	<?php
+    <?php
+    return ob_get_clean();
 }
+add_shortcode('cricket_shop_login', 'cricket_shop_login_form');
 
-add_shortcode( 'login_form', 'user_login_form');
 
+// Creating custom db
+function create_cart_table() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'cart';
+
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE IF NOT EXISTS $table_name (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        product_id INT NOT NULL,
+        quantity INT DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    ) $charset_collate;";
+
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
+}
+add_action('after_setup_theme', 'create_cart_table');
+
+// DB for purchase history
+function create_orders_table() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'orders';
+
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE IF NOT EXISTS $table_name (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        product_id INT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    ) $charset_collate;";
+
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
+}
+add_action('after_setup_theme', 'create_orders_table');
+
+// order history for logged-in users
+
+global $wpdb;
+$user_id = get_current_user_id();
+$orders = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}orders WHERE user_id = $user_id");
+
+foreach ($orders as $order) {
+    $product = get_post($order->product_id);
+    echo '<p>Order ID: ' . $order->id . ' - ' . $product->post_title . ' - ' . $order->created_at . '</p>';
+}
 
 
 // Product management

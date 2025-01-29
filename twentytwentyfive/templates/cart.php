@@ -1,20 +1,12 @@
 <?php
+global $wpdb;
+$user_id = get_current_user_id();
+$cart_items = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}cart WHERE user_id = $user_id");
 
-function display_cart(){
-    if (isset($_SESSION['cart']) && !empty($_SESSION['cart']) ) {
-        echo "<h2>Your Cart</h2>";
-        echo "<ul>";
-        foreach($_SESSION['cart'] as $product_id){
-            $product = get_product($product_id);
-            echo "<li>" . $product['name'] . "- $" . $product['price'] . "</li>";
-        }
-        echo "</ul>";
-    }
-    else {
-        echo "Your cart is empty";
-        }
+foreach ($cart_items as $item) {
+    $product = get_post($item->product_id);
+    echo '<p>' . $product->post_title . ' - Quantity: ' . $item->quantity . '</p>';
 }
 
-display_cart();
-
+// Add a form for payment or order confirmation
 ?>
